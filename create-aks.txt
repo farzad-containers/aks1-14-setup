@@ -1,0 +1,170 @@
+https://docs.microsoft.com/en-us/azure/aks/use-multiple-node-pools
+
+
+# Install the aks-preview extension
+az extension add --name aks-preview
+
+# Update the extension to make sure you have the latest version installed
+az extension update --name aks-preview
+
+
+
+
+az feature register --name MultiAgentpoolPreview --namespace Microsoft.ContainerService
+
+  Once the feature 'MultiAgentpoolPreview' is registered, invoking 'az provider register -n Microsoft.ContainerService' is required to get the change propagated
+
+  {
+    "id": "/subscriptions/702c550c-aeab-400d-b4c0-4519450f274d/providers/Microsoft.Features/providers/Microsoft.ContainerService/features/MultiAgentpoolPreview",
+    "name": "Microsoft.ContainerService/MultiAgentpoolPreview",
+    "properties": {
+      "state": "Registering"
+    },
+    "type": "Microsoft.Features/providers/features"
+  }
+
+az feature register --name VMSSPreview --namespace Microsoft.ContainerService
+
+Once the feature 'VMSSPreview' is registered, invoking 'az provider register -n Microsoft.ContainerService' is required to get the change propagated
+{
+  "id": "/subscriptions/702c550c-aeab-400d-b4c0-4519450f274d/providers/Microsoft.Features/providers/Microsoft.ContainerService/features/VMSSPreview",
+  "name": "Microsoft.ContainerService/VMSSPreview",
+  "properties": {
+    "state": "Registering"
+  },
+  "type": "Microsoft.Features/providers/features"
+}
+
+
+
+
+
+az feature list -o table --query "[?contains(name, 'Microsoft.ContainerService/MultiAgentpoolPreview')].{Name:name,State:properties.state}"
+                      State
+------------------------------------------------  -----------
+Microsoft.ContainerService/MultiAgentpoolPreview  Registering
+
+
+
+
+az feature list -o table --query "[?contains(name, 'Microsoft.ContainerService/VMSSPreview')].{Name:name,State:properties.state}"
+farzad@Azure:~$ az feature list -o table --query "[?contains(name, 'Microsoft.ContainerService/VMSSPreview')].{Name:name,State:properties.state}"
+Name                                    State
+--------------------------------------  -----------
+Microsoft.ContainerService/VMSSPreview  Registering
+
+
+az provider register --namespace Microsoft.ContainerService
+
+
+
+
+
+# Create AKS
+
+
+# Create a resource group in East US
+az group create --name frz-rg-aks-04 --location westeurope
+
+
+{
+  "id": "/subscriptions/702c550c-aeab-400d-b4c0-4519450f274d/resourceGroups/frz-rg-aks-04",
+  "location": "westeurope",
+  "managedBy": null,
+  "name": "frz-rg-aks-04",
+  "properties": {
+    "provisioningState": "Succeeded"
+  },
+  "tags": null,
+  "type": null
+}
+
+
+
+
+# Create a basic single-node AKS cluster
+az aks create \
+    --resource-group frz-rg-aks-04 \
+    --name frz-aks-04 \
+    --enable-vmss \
+    --node-count 1 \
+    --generate-ssh-keys \
+    --kubernetes-version 1.13.5
+    
+    
+The behavior of this command has been altered by the following extension: aks-preview
+ - Running ..
+ 
+ 
+
+The behavior of this command has been altered by the following extension: aks-preview
+{
+  "aadProfile": null,
+  "addonProfiles": null,
+  "agentPoolProfiles": [
+    {
+      "availabilityZones": null,
+      "count": 1,
+      "enableAutoScaling": null,
+      "maxCount": null,
+      "maxPods": 110,
+      "minCount": null,
+      "name": "nodepool1",
+      "orchestratorVersion": "1.13.5",
+      "osDiskSizeGb": 100,
+      "osType": "Linux",
+      "provisioningState": "Succeeded",
+      "type": "VirtualMachineScaleSets",
+      "vmSize": "Standard_DS2_v2",
+      "vnetSubnetId": null
+    }
+  ],
+  "apiServerAuthorizedIpRanges": null,
+  "dnsPrefix": "frz-aks-04-frz-rg-aks-04-702c55",
+  "enablePodSecurityPolicy": false,
+  "enableRbac": true,
+  "fqdn": "frz-aks-04-frz-rg-aks-04-702c55-0cd412bb.hcp.westeurope.azmk8s.io",
+  "id": "/subscriptions/702c550c-aeab-400d-b4c0-4519450f274d/resourcegroups/frz-rg-aks-04/providers/Microsoft.ContainerService/managedClusters/frz-aks-04",
+  "identity": null,
+  "kubernetesVersion": "1.13.5",
+  "linuxProfile": {
+    "adminUsername": "azureuser",
+    "ssh": {
+      "publicKeys": [
+        {
+          "keyData": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD03QH745nSJ6i1WEzLuaWbG98FBr3sWRO42jtywwGWKDn9AacHz/chIJkoj/uOzNJ2oRM0rvV0qv/yjRH4ZxB6W7s/wURLKEFO0WfsBl2tooQQC5fZjKkpYuasqXiYxBJBXIhfEdtYW8ZGL4iEen6Uxs8UIZN2me8TH4fNIryBnF1wRhOLh+K4ievFjSiOGcfllWgnZPEPwla1yNkCUPKPtfrxtIKP+8Tgo2WUvnnn1ky5YRKdOTH9O5eMBnMCDd8laozDV6YqtgQZfKvXvIMAnVktA3HKPPxAKrKtIMOhZY95YrdzOkxcoXAC58b+GjJ1IY3N8bNImMnWVZACAqul"
+        }
+      ]
+    }
+  },
+  "location": "westeurope",
+  "maxAgentPools": 8,
+  "name": "frz-aks-04",
+  "networkProfile": {
+    "dnsServiceIp": "10.0.0.10",
+    "dockerBridgeCidr": "172.17.0.1/16",
+    "loadBalancerSku": "basic",
+    "networkPlugin": "kubenet",
+    "networkPolicy": null,
+    "podCidr": "10.244.0.0/16",
+    "serviceCidr": "10.0.0.0/16"
+  },
+  "nodeResourceGroup": "MC_frz-rg-aks-04_frz-aks-04_westeurope",
+  "provisioningState": "Succeeded",
+  "resourceGroup": "frz-rg-aks-04",
+  "servicePrincipalProfile": {
+    "clientId": "9a20a136-510c-412b-b0ef-e467d212461e",
+    "secret": null
+  },
+  "tags": null,
+  "type": "Microsoft.ContainerService/ManagedClusters",
+  "windowsProfile": null
+}
+
+
+
+
+
+
+
+
