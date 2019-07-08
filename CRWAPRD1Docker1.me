@@ -1,0 +1,91 @@
+
+
+[11:53] Hussayn Visram
+    
+
+ACR_NAME=CRWAPRD1Docker1
+
+
+
+SERVICE_PRINCIPAL_NAME=acr-service-principal
+
+
+
+
+# Populate the ACR login server and resource id.
+
+
+
+ACR_LOGIN_SERVER=$(azacr show --name $ACR_NAME --query loginServer --output tsv)
+
+
+
+ACR_REGISTRY_ID=$(azacr show --name $ACR_NAME --query id --output tsv)
+
+
+
+
+# Create acrpull role assignment with a scope of the ACR resource.
+
+
+
+SP_PASSWD=$(az ad sp create-for-rbac --name http://$SERVICE_PRINCIPAL_NAME --role acrpull --scopes $ACR_REGISTRY_ID --query password --output tsv)
+
+
+
+
+# Get the service principal client id.
+
+
+
+CLIENT_ID=$(az ad sp show --id http://$SERVICE_PRINCIPAL_NAME --query appId --output tsv)
+
+
+
+
+# Output used when creating Kubernetes secret.
+
+
+
+echo "Service principal ID: $CLIENT_ID"
+
+
+
+echo "Service principal password: $SP_PASSWD"
+
+
+
+
+
+
+
+####Service principal ID: 66052a02-3e86-4d47-a5df-1f234c1483fc
+
+
+
+####ervice principal password: 31073284-c145-4483-9d61-8c542f292da2
+
+$CLIENT_ID = 66052a02-3e86-4d47-a5df-1f234c1483fc
+$SP_PASSWD = 31073284-c145-4483-9d61-8c542f292da2
+
+
+
+
+Create Kubernates secret
+
+
+
+
+kubectl create secret docker-registry acr-auth2 --docker-server AKSP1CLUSTER2.azurecr.io --docker-username $CLIENT_ID --docker-password $SP_PASSWD --docker-email hussayn.visram@berryworld.com
+
+kubectl create secret docker-registry acr-auth2 --docker-server frz-aks-5.azurecr.io --docker-username $CLIENT_ID --docker-password $SP_PASSWD --docker-email hussayn.visram@berryworld.com
+
+
+
+kubectl create secret docker-registry acr-auth2 --docker-server frz-aks-5.azurecr.io --docker-username $66052a02-3e86-4d47-a5df-1f234c1483fc  --docker-password 31073284-c145-4483-9d61-8c542f292da2 --docker-email hussayn.visram@berryworld.com
+
+
+
+
+
+
